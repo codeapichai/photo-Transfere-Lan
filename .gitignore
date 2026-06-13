@@ -8,6 +8,8 @@ dist/
 *.log
 *.exe
 *.msi
+!releases/
+!releases/PhotoTransfer LAN_0.1.5_x64_en-US.msi
 backend/photo_transfer.db
 storage/
 .gocache/

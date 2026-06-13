@@ -2,6 +2,12 @@
 
 Desktop Windows application for receiving photos and videos from iPhone or Android browsers over the same LAN without installing a mobile app.
 
+## Download
+
+Install the latest Windows build:
+
+[Download PhotoTransfer LAN 0.1.5 for Windows](releases/PhotoTransfer%20LAN_0.1.5_x64_en-US.msi)
+
 ## Stack
 
 - Next.js 15, TypeScript, TailwindCSS, App Router
