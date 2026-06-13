@@ -1,0 +1,14 @@
+.next/
+out/
+node_modules/
+target/
+src-tauri/target/
+dist/
+*.db
+*.log
+*.exe
+*.msi
+backend/photo_transfer.db
+storage/
+.gocache/
+.gomodcache/

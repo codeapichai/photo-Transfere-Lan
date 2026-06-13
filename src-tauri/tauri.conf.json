@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "PhotoTransfer LAN",
+  "version": "0.1.5",
+  "identifier": "com.phototransfer.lan",
+  "build": {
+    "beforeBuildCommand": "cd frontend && npm run build",
+    "beforeDevCommand": "cd frontend && npm run dev",
+    "frontendDist": "../frontend/out",
+    "devUrl": "http://localhost:3000"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "PhotoTransfer LAN",
+        "width": 1180,
+        "height": 780,
+        "minWidth": 960,
+        "minHeight": 640
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi"],
+    "externalBin": [
+      "binaries/phototransfer-backend"
+    ],
+    "icon": [
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    }
+  }
+}

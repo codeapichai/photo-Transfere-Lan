@@ -1,0 +1,43 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Backend tests
+        working-directory: backend
+        run: go test ./...
+      - name: Frontend install
+        working-directory: frontend
+        run: npm ci
+      - name: Frontend typecheck
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Frontend build
+        working-directory: frontend
+        run: npm run build
+      - name: Prepare backend sidecar
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path src-tauri/binaries
+          cd backend
+          go build -o ../src-tauri/binaries/phototransfer-backend-x86_64-pc-windows-msvc.exe ./cmd/server
+      - name: Desktop install
+        run: npm ci
+      - name: Tauri MSI
+        run: npm run tauri:build

@@ -1,0 +1,154 @@
+openapi: 3.1.0
+info:
+  title: PhotoTransfer LAN API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/setup:
+    post:
+      summary: Create the first admin user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupRequest"
+      responses:
+        "201":
+          description: Setup complete
+        "409":
+          description: Setup already completed
+  /api/auth/login:
+    post:
+      summary: Login and create a browser session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authenticated
+  /api/dashboard:
+    get:
+      summary: Read dashboard status
+      responses:
+        "200":
+          description: Dashboard payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /api/upload-sessions:
+    post:
+      summary: Start a chunked upload session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUploadSessionRequest"
+      responses:
+        "201":
+          description: Upload session created
+  /api/upload-sessions/{id}/chunks/{index}:
+    put:
+      summary: Upload one chunk as a stream
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: index
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "204":
+          description: Chunk accepted
+  /api/upload-sessions/{id}/complete:
+    post:
+      summary: Complete upload and verify SHA256
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expected_sha256:
+                  type: string
+      responses:
+        "200":
+          description: Final upload result
+  /api/ws:
+    get:
+      summary: WebSocket stream for dashboard and upload progress
+components:
+  schemas:
+    SetupRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+        password:
+          type: string
+          minLength: 8
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Dashboard:
+      type: object
+      required: [local_ip, service_status, storage_location, available_space_bytes, upload_url, today_files, today_bytes]
+      properties:
+        local_ip:
+          type: string
+        service_status:
+          type: string
+        storage_location:
+          type: string
+        available_space_bytes:
+          type: integer
+        upload_url:
+          type: string
+        today_files:
+          type: integer
+        today_bytes:
+          type: integer
+    CreateUploadSessionRequest:
+      type: object
+      required: [filename, filesize]
+      properties:
+        filename:
+          type: string
+        filesize:
+          type: integer
+        device_name:
+          type: string
+        duplicate_policy:
+          type: string
+          enum: [skip, overwrite, keep_both]
