@@ -1,6 +1,6 @@
 import type { ActivityLog, Dashboard, LoginSession, Settings, TemporaryToken, UploadRecord, UploadSession } from "@/types/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8080";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const method = init?.method?.toUpperCase() ?? "GET";

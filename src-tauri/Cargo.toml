@@ -1,6 +1,6 @@
 [package]
 name = "phototransferlan"
-version = "0.1.5"
+version = "0.1.6"
 description = "PhotoTransfer LAN Windows desktop shell"
 authors = ["PhotoTransfer LAN"]
 edition = "2021"
