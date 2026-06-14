@@ -6,7 +6,7 @@ Desktop Windows application for receiving photos and videos from iPhone or Andro
 
 Install the latest Windows build:
 
-[Download PhotoTransfer LAN 0.1.6 for Windows](https://github.com/codeapichai/photo-Transfere-Lan/releases/download/v0.1.6/PhotoTransfer%20LAN_0.1.6_x64_en-US.msi)
+[Download PhotoTransfer LAN 0.1.8 for Windows](https://github.com/codeapichai/photo-Transfere-Lan/releases/download/v0.1.8/PhotoTransfer%20LAN_0.1.8_x64_en-US.msi)
 
 Installer files are published as GitHub Release assets instead of being stored in the source tree.
 

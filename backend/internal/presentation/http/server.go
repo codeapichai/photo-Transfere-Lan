@@ -36,7 +36,8 @@ func NewServer(deps Dependencies) *fiber.App {
 		log.Printf("panic: %v", e)
 	}}))
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000,http://tauri.localhost,tauri://localhost",
+		AllowOrigins:     "http://localhost:3000,http://127.0.0.1:3000,http://tauri.localhost,https://tauri.localhost,tauri://localhost",
+		AllowOriginsFunc: func(origin string) bool { return origin == "null" },
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-CSRF-Token, X-Upload-Token",
 		AllowMethods:     "GET,POST,PUT,OPTIONS",

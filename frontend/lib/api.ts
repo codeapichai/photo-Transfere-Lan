@@ -1,26 +1,53 @@
 import type { ActivityLog, Dashboard, LoginSession, Settings, TemporaryToken, UploadRecord, UploadSession } from "@/types/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8080";
+const API_BASES = [
+  process.env.NEXT_PUBLIC_API_BASE,
+  "http://127.0.0.1:8080",
+  "http://localhost:8080"
+].filter(Boolean) as string[];
+
+let activeAPIBase = API_BASES[0];
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const method = init?.method?.toUpperCase() ?? "GET";
-  const csrf = typeof window !== "undefined" ? window.localStorage.getItem("pt_csrf") : null;
-  const session = typeof window !== "undefined" ? window.localStorage.getItem("pt_session") : null;
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(session ? { Authorization: `Bearer ${session}` } : {}),
-      ...(method !== "GET" && csrf ? { "X-CSRF-Token": csrf } : {}),
-      ...(init?.headers ?? {})
-    },
-    ...init
-  });
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-  const text = await response.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+	const method = init?.method?.toUpperCase() ?? "GET";
+	const csrf = typeof window !== "undefined" ? window.localStorage.getItem("pt_csrf") : null;
+	const session = typeof window !== "undefined" ? window.localStorage.getItem("pt_session") : null;
+	const requestInit: RequestInit = {
+		credentials: "include",
+		headers: {
+			"Content-Type": "application/json",
+			...(session ? { Authorization: `Bearer ${session}` } : {}),
+			...(method !== "GET" && csrf ? { "X-CSRF-Token": csrf } : {}),
+			...(init?.headers ?? {})
+		},
+		...init
+	};
+	let lastError: unknown;
+	for (const base of orderedAPIBases()) {
+		for (let attempt = 0; attempt < 3; attempt++) {
+			try {
+				const response = await fetch(`${base}${path}`, requestInit);
+				activeAPIBase = base;
+				if (!response.ok) {
+					throw new Error(await response.text());
+				}
+				const text = await response.text();
+				return (text ? JSON.parse(text) : undefined) as T;
+			} catch (error) {
+				lastError = error;
+				await delay(400);
+			}
+		}
+	}
+	throw lastError instanceof Error ? lastError : new Error("Failed to fetch");
+}
+
+function orderedAPIBases(): string[] {
+	return [activeAPIBase, ...API_BASES.filter((base) => base !== activeAPIBase)];
+}
+
+function delay(ms: number): Promise<void> {
+	return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 export async function login(username: string, password: string): Promise<LoginSession> {
@@ -64,7 +91,7 @@ export function getLogs(): Promise<ActivityLog[]> {
 }
 
 export function logsCSVURL(): string {
-  return `${API_BASE}/api/logs.csv`;
+	return `${activeAPIBase}/api/logs.csv`;
 }
 
 export function setup(username: string, password: string): Promise<void> {
@@ -93,7 +120,7 @@ export async function uploadFile(file: File, deviceName: string, uploadToken: st
   let index = 0;
   while (offset < file.size) {
     const chunk = file.slice(offset, offset + session.chunk_size);
-    const response = await fetch(`${API_BASE}/api/upload-sessions/${session.id}/chunks/${index}`, {
+		const response = await fetch(`${activeAPIBase}/api/upload-sessions/${session.id}/chunks/${index}`, {
       method: "PUT",
       headers: uploadToken
         ? { "X-Upload-Token": uploadToken }
@@ -116,7 +143,7 @@ export async function uploadFile(file: File, deviceName: string, uploadToken: st
 }
 
 export function wsURL(): string {
-  const url = new URL(API_BASE);
+  const url = new URL(activeAPIBase);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   url.pathname = "/api/ws";
   return url.toString();
